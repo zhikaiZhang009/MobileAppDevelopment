@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国2023年高速铁路分布图</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/css/main.css">
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    #header {
+      background-color: #333;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-size: 20px;
+    }
+    #mapViewDiv {
+      height: 100%;
+      width: calc(100% - 200px); /* 地图宽度减去底图库宽度 */
+      float: left;
+    }
+    #basemapGalleryDiv {
+      height: 100%;
+      width: 200px; /* 底图库宽度 */
+      float: right;
+      background-color: #f4f4f4;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    #basemapGallery {
+      margin-top: 10px;
+    }
+    .basemap-gallery-item {
+      margin-bottom: 10px;
+      cursor: pointer;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: white;
+    }
+    .basemap-gallery-item:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div id="header">中国2023年高速铁路分布图</div>
+  <div id="mapViewDiv"></div>
+  <div id="basemapGalleryDiv">
+    <h3>底图库</h3>
+    <div id="basemapGallery"></div>
+  </div>
+
+  <script src="https://js.arcgis.com/4.32/"></script>
+  <script>
+    require([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/FeatureLayer",
+      "esri/widgets/BasemapGallery",
+      "esri/widgets/Legend",
+      "esri/widgets/ScaleBar",
+      "esri/widgets/Search",
+      "esri/widgets/LayerList",
+      "esri/Basemap",
+      "esri/layers/TileLayer"
+    ], function(
+      Map, MapView, FeatureLayer, BasemapGallery, Legend, ScaleBar, Search, LayerList, Basemap, TileLayer
+    ) {
+      // 创建地图实例
+      var map = new Map({
+        basemap: "topo-vector"
+      });
+
+      // 创建地图视图
+      var mapView = new MapView({
+        container: "mapViewDiv",
+        map: map,
+        center: [104.1954, 35.8617], // 中国中心点
+        zoom: 4
+      });
+
+      // 添加高速铁路图层
+      var railwayLayer = new FeatureLayer({
+        url: "https://www.geosceneonline.cn/server/rest/services/Hosted/高速铁路地图/FeatureServer",
+        title: "高速铁路"
+      });
+      map.add(railwayLayer);
+
+      // 添加比例尺
+      var scaleBar = new ScaleBar({
+        view: mapView,
+        unit: "metric"
+      });
+      mapView.ui.add(scaleBar, "bottom-left");
+
+      // 添加图例
+      var legend = new Legend({
+        view: mapView
+      });
+      mapView.ui.add(legend, "bottom-right");
+
+      // 添加搜索框
+      var searchWidget = new Search({
+        view: mapView
+      });
+      mapView.ui.add(searchWidget, "top-right");
+
+      // 添加图层列表
+      var layerList = new LayerList({
+        view: mapView
+      });
+      mapView.ui.add(layerList, "top-right");
+
+      // 添加底图库
+      var basemapGallery = new BasemapGallery({
+        view: mapView,
+        container: document.getElementById("basemapGallery"),
+        source: {
+          portal: {
+            url: "https://www.arcgis.com",
+            useVectorBasemaps: true // 加载切片底图
+          }
+        },
+        selected: "topo-vector" // 默认选中向量地形图
+      });
+
+      // 添加自定义底图
+      var customBasemap1 = new Basemap({
+        baseLayers: [
+          new TileLayer({
+            url: "https://services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer",
+            title: "街道地图"
+          })
+        ],
+        title: "街道地图",
+        id: "streets"
+      });
+
+      var customBasemap2 = new Basemap({
+        baseLayers: [
+          new TileLayer({
+            url: "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer",
+            title: "卫星地图"
+          })
+        ],
+        title: "卫星地图",
+        id: "satellite"
+      });
+
+      // 将自定义底图添加到底图库
+      basemapGallery.add(customBasemap1);
+      basemapGallery.add(customBasemap2);
+    });
+  </script>
+</body>
+</html>
